@@ -64,7 +64,7 @@ export function AdminPage() {
               <button onClick={retrain} className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-violet-500 px-4 py-2 text-sm font-medium text-slate-950"><RefreshCw className="h-4 w-4" /> Retrain model</button>
             </div>
             <div className="mt-4 rounded-3xl border border-white/10 bg-slate-950/40 p-4 text-sm text-slate-300">
-              The app uses SpeechBrain embeddings, so retraining rebuilds speaker centroids from stored enrollment samples instead of training a custom deep model from scratch.
+              The app uses VoiceCore embeddings, so retraining rebuilds speaker centroids from stored enrollment samples instead of training a custom deep model from scratch.
             </div>
           </div>
         </div>

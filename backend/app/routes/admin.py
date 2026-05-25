@@ -33,22 +33,4 @@ async def remove_recording(record_id: str, db: AsyncIOMotorDatabase = Depends(ge
 
 @router.post("/retrain")
 async def retrain(db: AsyncIOMotorDatabase = Depends(get_db), current_user: dict = Depends(require_admin)):
-    return await recompute_models(db)from fastapi import APIRouter, Depends
-from motor.motor_asyncio import AsyncIOMotorDatabase
-
-from app.database.mongo import get_db
-from app.dependencies import require_admin
-from app.services.analytics_service import admin_metrics
-from app.services.speaker_service import recompute_models
-
-router = APIRouter(prefix="/admin", tags=["Admin"])
-
-
-@router.get("/metrics")
-async def metrics(db: AsyncIOMotorDatabase = Depends(get_db), current_user: dict = Depends(require_admin)):
-    return await admin_metrics(db)
-
-
-@router.post("/retrain")
-async def retrain(db: AsyncIOMotorDatabase = Depends(get_db), current_user: dict = Depends(require_admin)):
     return await recompute_models(db)

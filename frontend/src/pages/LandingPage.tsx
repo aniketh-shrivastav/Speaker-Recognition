@@ -37,7 +37,7 @@ export function LandingPage() {
               <Sparkles className="h-4 w-4" /> AI-powered speaker intelligence
             </div>
             <h1 className="mt-6 max-w-3xl font-display text-5xl font-semibold leading-tight text-white lg:text-7xl">
-              Recognize voices with a futuristic <span className="bg-gradient-to-r from-cyan-300 to-violet-400 bg-clip-text text-transparent">SpeechBrain</span> stack.
+              Recognize voices with a futuristic <span className="bg-gradient-to-r from-cyan-300 to-violet-400 bg-clip-text text-transparent">VoiceCore</span> stack.
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-slate-300">
               Enrollment, recognition, history, and analytics in a polished full-stack app built for modern speaker identification workflows.
