@@ -12,7 +12,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.config import get_settings
 from app.ml.speechbrain_service import cosine_similarity, embedding_from_audio_file, mean_embedding
-from app.utils.audio import ensure_supported_file, mfcc_image, secure_filename, spectrogram_image, waveform_image
+from app.utils.audio import ensure_supported_file, mfcc_image, secure_filename, spectrogram_image, transcode_webm_to_wav, waveform_image
 
 
 async def save_upload(upload: UploadFile, folder: Path) -> Path:
@@ -26,6 +26,10 @@ async def save_upload(upload: UploadFile, folder: Path) -> Path:
     if len(content) > settings.max_upload_mb * 1024 * 1024:
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="File exceeds upload limit")
     destination.write_bytes(content)
+    converted = transcode_webm_to_wav(destination)
+    if converted != destination:
+        destination.unlink(missing_ok=True)
+        destination = converted
     ensure_supported_file(destination)
     return destination
 

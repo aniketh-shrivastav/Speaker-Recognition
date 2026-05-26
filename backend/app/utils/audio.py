@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import base64
 import io
+import shutil
+import subprocess
 from pathlib import Path
 
 import librosa
@@ -14,11 +16,38 @@ matplotlib.use("Agg")
 
 
 SUPPORTED_EXTENSIONS = {".wav", ".mp3", ".flac", ".m4a", ".aac", ".ogg"}
+WEBM_EXTENSIONS = {".webm", ".weba"}
 
 
 def ensure_supported_file(path: Path) -> None:
     if path.suffix.lower() not in SUPPORTED_EXTENSIONS:
         raise ValueError("Unsupported audio format. Use WAV, MP3, FLAC, M4A, AAC, or OGG.")
+
+
+def transcode_webm_to_wav(source: Path) -> Path:
+    if source.suffix.lower() not in WEBM_EXTENSIONS:
+        return source
+
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        try:
+            from imageio_ffmpeg import get_ffmpeg_exe
+
+            ffmpeg = get_ffmpeg_exe()
+        except Exception as exc:  # noqa: BLE001
+            raise ValueError("Browser recordings require ffmpeg to convert WebM audio.") from exc
+
+    if not ffmpeg:
+        raise ValueError("Browser recordings require ffmpeg to convert WebM audio.")
+
+    target = source.with_suffix(".wav")
+    subprocess.run(
+        [ffmpeg, "-y", "-i", str(source), "-ac", "1", "-ar", "16000", str(target)],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return target
 
 
 def load_audio(path: str, target_sr: int = 16000) -> tuple[np.ndarray, int]:
