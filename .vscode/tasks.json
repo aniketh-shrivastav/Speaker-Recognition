@@ -1,0 +1,47 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "install-imageio-ffmpeg",
+			"type": "shell",
+			"command": "f:/Speaker Recognition/.venv/Scripts/python.exe",
+			"args": [
+				"-m",
+				"pip",
+				"install",
+				"imageio-ffmpeg==0.6.0"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "install-huggingface-hub",
+			"type": "shell",
+			"command": "f:/Speaker Recognition/.venv/Scripts/python.exe",
+			"args": [
+				"-m",
+				"pip",
+				"install",
+				"huggingface_hub==0.25.2"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "install-huggingface-hub-older",
+			"type": "shell",
+			"command": "f:/Speaker Recognition/.venv/Scripts/python.exe",
+			"args": [
+				"-m",
+				"pip",
+				"install",
+				"huggingface_hub==0.23.5"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

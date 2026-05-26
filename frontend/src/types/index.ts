@@ -1,4 +1,4 @@
-export type Role = 'user' | 'admin';
+export type Role = "user" | "admin";
 
 export type AuthUser = {
   id: string;
@@ -30,7 +30,11 @@ export type SpeakerRecord = {
   created_by: string;
   created_at: string;
   updated_at: string;
-  audio_files: Array<{ path: string; original_name: string; created_at: string }>;
+  audio_files: Array<{
+    path: string;
+    original_name: string;
+    created_at: string;
+  }>;
 };
 
 export type RecognitionRecord = {

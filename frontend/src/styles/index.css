@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -15,7 +15,7 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   background: #050816;
 }
 
@@ -28,5 +28,5 @@ body {
 }
 
 .font-display {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: "Space Grotesk", sans-serif;
 }
