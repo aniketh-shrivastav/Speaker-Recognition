@@ -58,8 +58,9 @@ export function SignupPage() {
       setAuth(data.access_token, data.user);
       toast.success('Account created');
       navigate('/dashboard');
-    } catch (error) {
-      toast.error('Signup failed');
+    } catch (err: any) {
+      const message = err?.response?.data?.detail || err?.response?.data?.message || 'Signup failed';
+      toast.error(String(message));
     } finally {
       setLoading(false);
     }

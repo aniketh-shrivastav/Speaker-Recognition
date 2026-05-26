@@ -38,8 +38,9 @@ export function LoginPage() {
       setAuth(data.access_token, data.user);
       toast.success('Welcome back');
       navigate('/dashboard');
-    } catch (error) {
-      toast.error('Login failed');
+    } catch (err: any) {
+      const message = err?.response?.data?.detail || err?.response?.data?.message || 'Login failed';
+      toast.error(String(message));
     } finally {
       setLoading(false);
     }
