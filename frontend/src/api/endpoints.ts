@@ -3,12 +3,12 @@ import type { AdminMetrics, DashboardSummary, RecognitionRecord, SpeakerRecord, 
 
 export const authApi = {
   login: async (payload: { email: string; password: string }) => {
-    const { data } = await api.post<TokenResponse>('/auth/login', payload);
-    return data;
+    const { data } = await api.post('/auth/login', payload);
+    return { access_token: data.access_token, user: { id: data.id, username: data.username, email: data.email, role: data.role } };
   },
   register: async (payload: { username: string; email: string; password: string; role?: string }) => {
-    const { data } = await api.post<TokenResponse>('/auth/register', payload);
-    return data;
+    const { data } = await api.post('/auth/register', payload);
+    return { access_token: data.access_token, user: { id: data.id, username: data.username, email: data.email, role: data.role } };
   },
 };
 
