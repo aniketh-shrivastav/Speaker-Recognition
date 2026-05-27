@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LoaderCircle, Upload } from "lucide-react";
+import { LoaderCircle, Mic, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { speakerApi } from "@/api/endpoints";
@@ -11,8 +11,38 @@ import type { RecognitionRecord } from "@/types";
 
 export function RecognitionPage() {
   const [file, setFile] = useState<File | null>(null);
+  const [recording, setRecording] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RecognitionRecord | null>(null);
+
+  const startRecording = async () => {
+    if (recording) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks: BlobPart[] = [];
+
+      recorder.ondataavailable = (event) => chunks.push(event.data);
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        const recordedFile = new File([blob], `recording-${Date.now()}.webm`, {
+          type: "audio/webm",
+        });
+        setFile(recordedFile);
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      recorder.start();
+      setRecording(true);
+      setTimeout(() => {
+        recorder.stop();
+        setRecording(false);
+      }, 4500);
+    } catch (error) {
+      setRecording(false);
+      toast.error("Microphone access denied");
+    }
+  };
 
   const recognize = async () => {
     if (!file) return;
@@ -52,6 +82,17 @@ export function RecognitionPage() {
                 onChange={(event) => setFile(event.target.files?.[0] ?? null)}
               />
             </label>
+            <button
+              onClick={startRecording}
+              className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white"
+            >
+              {recording ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
+              {recording ? "Recording..." : "Record from browser"}
+            </button>
             <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3 text-sm text-slate-300">
               {file ? file.name : "No file selected"}
             </div>
