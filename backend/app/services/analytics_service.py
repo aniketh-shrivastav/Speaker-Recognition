@@ -22,7 +22,29 @@ async def dashboard_summary(db: AsyncIOMotorDatabase, user_id: str | None = None
         end = start + timedelta(days=1)
         activity.append({"day": day.isoformat(), "attempts": await db.history.count_documents({**history_query, "timestamp": {"$gte": start, "$lt": end}})})
 
-    return {"total_registered_speakers": total_speakers, "recognition_attempts": total_attempts, "accuracy": success_ratio, "recent_uploads": recent_uploads, "recent_speakers": recent_speakers, "activity": activity, "system_status": "operational"}
+    serialized_uploads: list[dict] = []
+    for item in recent_uploads:
+        item_id = item.pop("_id", None)
+        item["id"] = str(item_id) if item_id is not None else ""
+        serialized_uploads.append(item)
+
+    serialized_speakers: list[dict] = []
+    for speaker in recent_speakers:
+        speaker_id = speaker.pop("_id", None)
+        speaker["id"] = str(speaker_id) if speaker_id is not None else ""
+        speaker.pop("embeddings", None)
+        speaker.pop("embedding_vector", None)
+        serialized_speakers.append(speaker)
+
+    return {
+        "total_registered_speakers": total_speakers,
+        "recognition_attempts": total_attempts,
+        "accuracy": success_ratio,
+        "recent_uploads": serialized_uploads,
+        "recent_speakers": serialized_speakers,
+        "activity": activity,
+        "system_status": "operational",
+    }
 
 
 async def admin_metrics(db: AsyncIOMotorDatabase) -> dict:
