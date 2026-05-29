@@ -26,11 +26,14 @@ async def save_upload(upload: UploadFile, folder: Path) -> Path:
     if len(content) > settings.max_upload_mb * 1024 * 1024:
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="File exceeds upload limit")
     destination.write_bytes(content)
-    converted = transcode_webm_to_wav(destination)
-    if converted != destination:
-        destination.unlink(missing_ok=True)
-        destination = converted
-    ensure_supported_file(destination)
+    try:
+        converted = transcode_webm_to_wav(destination)
+        if converted != destination:
+            destination.unlink(missing_ok=True)
+            destination = converted
+        ensure_supported_file(destination)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     return destination
 
 
@@ -97,7 +100,12 @@ async def recognize_speaker(db: AsyncIOMotorDatabase, audio_file: UploadFile, us
     saved_path = await save_upload(audio_file, upload_dir)
 
     start = perf_counter()
-    query_embedding = embedding_from_audio_file(str(saved_path))
+    try:
+        query_embedding = embedding_from_audio_file(str(saved_path))
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Embedding failed: {exc}") from exc
     speakers = await db.speakers.find({}).to_list(length=500)
 
     best_match = {"speaker_name": "Unknown", "confidence": 0.0, "similarity": 0.0, "speaker_id": None}
@@ -114,6 +122,21 @@ async def recognize_speaker(db: AsyncIOMotorDatabase, audio_file: UploadFile, us
         best_match = {"speaker_name": "Unknown", "confidence": 0.0, "similarity": best_match["similarity"], "speaker_id": None}
 
     elapsed_ms = (perf_counter() - start) * 1000
+    waveform = None
+    spectrogram = None
+    mfcc = None
+    try:
+        waveform = waveform_image(str(saved_path))
+    except Exception:  # noqa: BLE001
+        waveform = None
+    try:
+        spectrogram = spectrogram_image(str(saved_path))
+    except Exception:  # noqa: BLE001
+        spectrogram = None
+    try:
+        mfcc = mfcc_image(str(saved_path))
+    except Exception:  # noqa: BLE001
+        mfcc = None
     history_doc = {
         "uploaded_audio": str(saved_path),
         "uploaded_filename": audio_file.filename,
@@ -124,12 +147,13 @@ async def recognize_speaker(db: AsyncIOMotorDatabase, audio_file: UploadFile, us
         "recognition_time_ms": round(elapsed_ms, 2),
         "timestamp": datetime.now(timezone.utc),
         "recognized_by": user_id,
-        "waveform_image": waveform_image(str(saved_path)),
-        "spectrogram_image": spectrogram_image(str(saved_path)),
-        "mfcc_image": mfcc_image(str(saved_path)),
+        "waveform_image": waveform,
+        "spectrogram_image": spectrogram,
+        "mfcc_image": mfcc,
     }
     inserted = await db.history.insert_one(history_doc)
     history_doc["id"] = str(inserted.inserted_id)
+    history_doc.pop("_id", None)
     return history_doc
 
 
@@ -145,6 +169,7 @@ async def list_history(db: AsyncIOMotorDatabase, user_id: str, page: int, page_s
     items = []
     async for item in cursor:
         item["id"] = str(item["_id"])
+        item.pop("_id", None)
         items.append(item)
     return {"items": items, "total": total, "page": page, "page_size": page_size}
 

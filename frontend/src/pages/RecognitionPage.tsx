@@ -51,8 +51,15 @@ export function RecognitionPage() {
       const data = await speakerApi.recognize(file);
       setResult(data);
       toast.success("Recognition complete");
-    } catch (error) {
-      toast.error("Recognition failed");
+    } catch (error: any) {
+      const responseData = error?.response?.data;
+      const message =
+        responseData?.detail ||
+        responseData?.message ||
+        (typeof responseData === "string" ? responseData : null) ||
+        error?.message ||
+        "Recognition failed";
+      toast.error(String(message));
     } finally {
       setLoading(false);
     }

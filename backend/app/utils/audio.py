@@ -41,17 +41,25 @@ def transcode_webm_to_wav(source: Path) -> Path:
         raise ValueError("Browser recordings require ffmpeg to convert WebM audio.")
 
     target = source.with_suffix(".wav")
-    subprocess.run(
-        [ffmpeg, "-y", "-i", str(source), "-ac", "1", "-ar", "16000", str(target)],
-        check=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+    try:
+        subprocess.run(
+            [ffmpeg, "-y", "-i", str(source), "-ac", "1", "-ar", "16000", str(target)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except subprocess.CalledProcessError as exc:  # noqa: PERF203
+        detail = (exc.stderr or "").strip() or "ffmpeg failed to convert WebM audio."
+        raise ValueError(detail) from exc
     return target
 
 
 def load_audio(path: str, target_sr: int = 16000) -> tuple[np.ndarray, int]:
-    waveform, sample_rate = librosa.load(path, sr=target_sr, mono=True)
+    try:
+        waveform, sample_rate = librosa.load(path, sr=target_sr, mono=True)
+    except Exception as exc:  # noqa: BLE001
+        raise ValueError(f"Failed to decode audio: {exc}") from exc
     if waveform.size == 0:
         raise ValueError("Audio file is empty or unreadable.")
     return waveform.astype(np.float32), sample_rate
